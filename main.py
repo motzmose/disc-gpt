@@ -28,8 +28,9 @@ async def on_message(ctx):
         return
     # Check if the message is in a thread and in the specified channel
     if isinstance(ctx.channel,discord.channel.Thread) and ctx.channel.parent_id == channel_id:
-        messages = await ctx.channel.history(history_limit).flatten()
-        messages.reverse().pop(0)
+        messages = await ctx.channel.history(limit=history_limit).flatten()
+        messages.reverse()
+        messages.pop(0)
         messages = [{'role': gpt_author(message.author), 'content': message.content} for message in messages]
         response = send_to_chatGPT(messages)
         await ctx.channel.send(response)
@@ -37,6 +38,7 @@ async def on_message(ctx):
 # Command to send a single message to the Chatbot
 @bot.slash_command(description="Send a single message to the Chatbot", guild_ids=guild_ids)
 async def one_shot(ctx, message: str):
+    await ctx.defer()
     messages = [{'role': 'user', 'content': message}]
     response = send_to_chatGPT(messages)
     await ctx.respond(response)
